@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome to Your Dashboard</h1>
+    <h2>Available Tutors</h2>
+    <ul id="tutorsList">
+        {% for tutor in tutors %}
+        <li>
+            {{ tutor.name }} - {{ tutor.subject }} 
+            <button onclick="bookSession('{{ tutor._id }}')">Book Session</button>
+        </li>
+        {% endfor %}
+    </ul>
+    
+    <script>
+        async function bookSession(tutorId) {
+            const sessionTime = prompt("Enter session time (YYYY-MM-DDTHH:MM:SS format):");
+            if (sessionTime) {
+                const data = {
+                    tutor_id: tutorId,
+                    scheduled_time: sessionTime
+                };
+
+                const response = await fetch('/book/session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                alert(result.message);
+            }
+        }
+    </script>
+</body>
+</html>
