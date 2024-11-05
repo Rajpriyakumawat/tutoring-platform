@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .tutor-card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #fff;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .tutor-info {
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        footer {
+            margin-top: 20px;
+            padding: 10px 0;
+            text-align: center;
+            background-color: #e9ecef;
+            border-top: 1px solid #ccc;
+        }
+        .nav-links {
+            margin-top: 20px;
+        }
+        .nav-links a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Your Dashboard</h1>
+    <h2>Available Tutors</h2>
+    <div id="tutorsList">
+        {% for tutor in tutors %}
+        <div class="tutor-card">
+            <div class="tutor-info">
+                <strong>{{ tutor.name }}</strong><br>
+                Subject: {{ tutor.subject }}<br>
+                Rate: ${{ tutor.rate }}/hour<br>
+                Availability: {{ tutor.availability }}<br>
+            </div>
+            <button onclick="bookSession('{{tutor._id}}', '{{tutor.name}}', '{{tutor.subject}}')">Book Session</button>
+        </div>
+        {% endfor %}    
+    </div>
+
+    <div class="nav-links">
+        <h2>Navigate to:</h2>
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+        <a href="/sessions">Booked Sessions</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Tutoring Platform</p>
+        <p>Contact Us | Privacy Policy | Terms</p>
+    </footer>
+
+    <script>
+        async function bookSession(tutorId, tutorName, tutorSubject) {
+            console.log(tutorId);
+            console.log(tutorName);
+            const sessionTime = prompt("Enter session time (YYYY-MM-DD HH:MM format):");
+            if (sessionTime) {
+                const data = {
+                    tutor_id: tutorId,
+                    tutor_name: tutorName,
+                    tutor_subject: tutorSubject,
+                    scheduled_time: sessionTime
+                };
+
+                const response = await fetch('/book/confirm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if(response.ok)
+                {
+                    var text = "Confirm Your Booking\n\nSession Details: Your upcoming tutoring appointment with ";
+                    text += tutorName + "is scheduled for ";
+                    text +=  sessionTime +", with a duration of 60 minutes.";
+                    if (confirm(text)) {
+                        // Save it!
+                        var bookResponse = await fetch('/book/session', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        var bookResult = await bookResponse.json();
+                        alert(bookResult.message);
+
+                        if(bookResponse.ok)
+                        {
+                            window.location.href = '/sessions';
+                        }
+                    }
+                }
+
+                // const result = await response.json();
+                // alert(result.message);
+            }
+        }
+    </script>
+</body>
+</html>
